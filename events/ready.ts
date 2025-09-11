@@ -8,7 +8,6 @@ module.exports = {
 	async execute(client : Discord.Client) {
 
 		// Connect to MongoDB
-		// @ts-ignore
 		await mongoose.connect(mongoURI).then(r => {
 			console.log('Connected to MongoDB');
 		}).catch((e: Error) => {
