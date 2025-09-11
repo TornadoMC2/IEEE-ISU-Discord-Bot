@@ -17,13 +17,15 @@ import {
 import { CommandInteraction, PermissionsBitField, Role, TextChannel, ChannelSelectMenuBuilder } from 'discord.js';
 import GuildConfig, { IGuildConfig } from '../../models/GuildConfig';
 
-const configOptions: {
+interface ConfigOption {
     name: string;
     description: string;
     key: keyof Omit<IGuildConfig, '_id' | 'guildId'>;
-    type: string;
+    type: 'role' | 'channel' | 'string';
     channelTypes?: ChannelType[];
-}[] = [
+}
+
+const configOptions: ConfigOption[] = [
     {
         name: 'Member Role',
         description: 'The role assigned to new members.',
@@ -96,7 +98,14 @@ async function buildMainMenu(interaction: CommandInteraction) {
 
     const row = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(selectMenu);
 
-    return { embeds: [embed], components: [row] };
+    const cancelRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
+        new ButtonBuilder()
+            .setCustomId('config_cancel')
+            .setLabel('Cancel')
+            .setStyle(ButtonStyle.Danger)
+    );
+
+    return { embeds: [embed], components: [row, cancelRow] };
 }
 
 module.exports = {
@@ -116,7 +125,7 @@ module.exports = {
         const message = await interaction.reply({ ...menu, ephemeral: true, fetchReply: true });
 
         const collector = message.createMessageComponentCollector({
-            componentType: ComponentType.StringSelect,
+            filter: i => i.user.id === interaction.user.id,
             time: 300000, // 5 minutes
         });
 
@@ -125,6 +134,16 @@ module.exports = {
                 await i.reply({ content: 'You cannot use this menu.', ephemeral: true });
                 return;
             }
+
+            if (i.isButton()) {
+                if (i.customId === 'config_cancel') {
+                    await i.update({ content: 'Configuration cancelled.', components: [] });
+                    collector.stop();
+                }
+                return;
+            }
+
+            if (!i.isStringSelectMenu()) return;
 
             const selectedKey = i.values[0];
             const option = configOptions.find(o => o.key === selectedKey);
