@@ -2,7 +2,7 @@ import { GuildMember, TextChannel } from 'discord.js';
 import GuildConfig from '../models/GuildConfig';
 import { log, logError } from "../utils/LogUtils";
 
-export default {
+module.exports = {
     name: 'guildMemberAdd',
     once: false,
     async execute(member: GuildMember) {
