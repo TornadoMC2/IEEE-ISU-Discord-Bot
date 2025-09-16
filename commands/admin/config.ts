@@ -111,8 +111,9 @@ async function buildMainMenu(interaction: CommandInteraction) {
 module.exports = {
     data: new SlashCommandBuilder()
         .setName('config')
-        .setDescription('Configure bot settings for this server.'),
+        .setDescription('Configure bot settings for this server.')
         //.setDefaultMemberPermissions(PermissionsBitField.Flags.Administrator),
+        .setDefaultMemberPermissions(PermissionsBitField.Flags.ManageGuild && PermissionsBitField.Flags.ManageRoles && PermissionsBitField.Flags.ManageChannels),
     async execute(interaction: CommandInteraction) {
         if (!interaction.isChatInputCommand() || !interaction.guildId) {
             await interaction.reply({ content: 'This command can only be used in a server.', ephemeral: true });
